@@ -1,0 +1,23 @@
+Setting target instruction set architecture to: Default (Advanced Vector Extension (AVX))
+OpenCL Intel CPU device was found!
+Device name: Intel(R) Core(TM) i7-2640M CPU @ 2.80GHz
+Device version: OpenCL 1.2 (Build 57)
+Device vendor: Intel(R) Corporation
+Device profile: FULL_PROFILE
+Compilation started
+C:\Users\bowmanrs1\kmeansocl\kmeansocl\Template.cl(45,6) :warning CL : expression result unused
+Compilation done
+Linking started
+Linking done
+Device build started
+Device build done
+Kernel <Kmeans> was successfully vectorized (8)
+Done.
+Kmeans info:
+	Maximum work-group size: 8192
+	Compiler work-group size: (0, 0, 0)
+	Local memory size: 128
+	Preferred multiple of work-group size: 128
+	Minimum amount of private memory: 128
+
+Build succeeded!

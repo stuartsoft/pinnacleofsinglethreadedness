@@ -1,0 +1,25 @@
+Setting target instruction set architecture to: Default (Advanced Vector Extension (AVX))
+OpenCL Intel CPU device was found!
+Device name: Intel(R) Core(TM) i7-2640M CPU @ 2.80GHz
+Device version: OpenCL 1.2 (Build 10002)
+Device vendor: Intel(R) Corporation
+Device profile: FULL_PROFILE
+Compilation started
+C:\Users\SybrandtJG1\Desktop\optimizedKmeansOCL\kmeansocl\Template.cl(24,27) :warning CL : implicit conversion from integral type to floating point type for overloadable function might lead to ambiguity
+C:\Users\SybrandtJG1\Desktop\optimizedKmeansOCL\kmeansocl\Template.cl(24,42) :warning CL : implicit conversion from integral type to floating point type for overloadable function might lead to ambiguity
+C:\Users\SybrandtJG1\Desktop\optimizedKmeansOCL\kmeansocl\Template.cl(24,57) :warning CL : implicit conversion from integral type to floating point type for overloadable function might lead to ambiguity
+Compilation done
+Linking started
+Linking done
+Device build started
+Device build done
+Kernel <Kmeans> was not vectorized
+Done.
+Kmeans info:
+	Maximum work-group size: 2048
+	Compiler work-group size: (0, 0, 0)
+	Local memory size: 256
+	Preferred multiple of work-group size: 128
+	Minimum amount of private memory: 128
+
+Build succeeded!
