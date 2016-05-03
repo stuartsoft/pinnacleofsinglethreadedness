@@ -28,9 +28,9 @@ struct pixel {
 const int CENTROID_COUNT = 3;
 
 //function prototypes
-void assignCentroids(vector<pixel>&, const vector<centroid>&);	//this step should not alter the centroids
-void moveCentroids(const vector<pixel>&, vector<centroid>&);	//this step should not alter the pixels
-void assignFinalPixelColors(vector<pixel>& pixels, const vector<centroid>& centroids);
+void ac(vector<pixel>&, const vector<centroid>&);	//this step should not alter the centroids
+void mc(const vector<pixel>&, vector<centroid>&);	//this step should not alter the pixels
+void fpc(vector<pixel>& pixels, const vector<centroid>& centroids);
 float getdist(int x1, int y1, int z1, int x2, int y2, int z2);
 
 
@@ -95,12 +95,22 @@ int main(int argc, char** argv) {
 		centroids[i] = temp;
 	}
 
-	for(int z = 0;z<1000;z++){
-		assignCentroids(pixels, centroids);
-		moveCentroids(pixels, centroids);
+	for(int z = 0;z<250;z++){
+		//loop unrolling
+		ac(pixels, centroids);
+		mc(pixels, centroids);
+
+		ac(pixels, centroids);
+		mc(pixels, centroids);
+
+		ac(pixels, centroids);
+		mc(pixels, centroids);
+
+		ac(pixels, centroids);
+		mc(pixels, centroids);
 		//cout<<z<<endl;
 	}
-	assignFinalPixelColors(pixels, centroids);
+	fpc(pixels, centroids);
 	double result = timer.stop();
 
 	//write image
@@ -139,7 +149,7 @@ int main(int argc, char** argv) {
 }
 
 //any other functions...assigning centroids and moving centroids
-void assignCentroids(vector<pixel>& pixels, const vector<centroid>& centroids) {
+inline void ac(vector<pixel>& pixels, const vector<centroid>& centroids) {
 	for (int i = 0;i<pixels.size();i++){
 		int minIndex;
 		float minVal = 255*3;
@@ -160,7 +170,7 @@ void assignCentroids(vector<pixel>& pixels, const vector<centroid>& centroids) {
 	}
 }
 
-void moveCentroids(const vector<pixel>& pixels, vector<centroid>& centroids) {
+inline void mc(const vector<pixel>& pixels, vector<centroid>& centroids) {
 	for(int j = 0;j<centroids.size();j++){
 		//first, find the avg of the pixels assigned to this centroid
 		float rAvg = 0;
@@ -186,7 +196,7 @@ void moveCentroids(const vector<pixel>& pixels, vector<centroid>& centroids) {
 	}
 }
 
-void assignFinalPixelColors(vector<pixel>& pixels, const vector<centroid>& centroids){
+inline void fpc(vector<pixel>& pixels, const vector<centroid>& centroids){
 	for (int i = 0;i<pixels.size();i++){
 		pixels[i].r = centroids[pixels[i].cluster].r;
 		pixels[i].g = centroids[pixels[i].cluster].g;
