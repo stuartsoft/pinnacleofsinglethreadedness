@@ -22,7 +22,7 @@
     <ProjectGuid>{06B4DF7B-9679-41B0-900D-54449D117775}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>kmeansstarter</RootNamespace>
-    <ProjectName>kmeans single</ProjectName>
+    <ProjectName>pinnacle</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -150,9 +150,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="StopWatch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FreeImagePlus.h" />
+    <ClInclude Include="StopWatch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
