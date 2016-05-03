@@ -30,7 +30,7 @@ struct pixel {
 };
 
 //hardcode centroid count here
-const int CENTROID_COUNT = 3;
+const int CENTROID_COUNT = 5;
 
 //function prototypes
 //void ac(vector<pixel>&, const vector<centroid>&);	//this step should not alter the centroids

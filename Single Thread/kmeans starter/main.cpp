@@ -24,7 +24,7 @@ struct pixel {
 };
 
 //hardcode centroid count here
-const int CENTROID_COUNT = 3;
+const int CENTROID_COUNT = 5;
 
 //function prototypes
 void assignCentroids(vector<pixel>&, const vector<centroid>&);	//this step should not alter the centroids
@@ -108,9 +108,9 @@ int main(int argc, char** argv) {
 	for(unsigned int i = 0; i < output.getWidth(); ++i) {
 		for(unsigned int j = 0; j < output.getHeight(); ++j) {
 			byte colors[4];
-			colors[0] = static_cast<byte>(pixels[j * output.getWidth() + i].b * 255);
+			colors[0] = static_cast<byte>(pixels[j * output.getWidth() + i].r * 255);
 			colors[1] = static_cast<byte>(pixels[j * output.getWidth() + i].g * 255);
-			colors[2] = static_cast<byte>(pixels[j * output.getWidth() + i].r * 255);
+			colors[2] = static_cast<byte>(pixels[j * output.getWidth() + i].b * 255);
 
 			output.setPixelColor(i, j, reinterpret_cast<RGBQUAD*>(colors));
 		}
