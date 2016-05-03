@@ -32,6 +32,16 @@ void moveCentroids(const vector<pixel>&, vector<centroid>&);	//this step should 
 void assignFinalPixelColors(vector<pixel>& pixels, const vector<centroid>& centroids);
 float getdist(int x1, int y1, int z1, int x2, int y2, int z2);
 
+bool convergence(vector<centroid> &c1,vector<centroid> &c2){
+	float acc = 0;
+	for(int i = 0 ; i < c1.size();i++){
+		acc+=abs(c1[i].b-c2[i].b);
+		acc+=abs(c1[i].r-c2[i].r);
+		acc+=abs(c1[i].g-c2[i].g);
+	}
+	return acc < 0.00001;
+}
+
 
 //main function
 int main(int argc, char** argv) {
@@ -41,9 +51,10 @@ int main(int argc, char** argv) {
 	#endif
 
 	//hardcode the image names, create vectors and FreeImage library object
-	char* file_in = "test.jpg";
+	char* file_in = "test1.jpg";
 	char* file_out = "test_result.jpg";
 	vector<centroid> centroids(CENTROID_COUNT);
+	vector<centroid> OLDcentroids(CENTROID_COUNT);
 	vector<pixel> pixels;
 	fipImage input;
 	StopWatch timer;
@@ -93,11 +104,13 @@ int main(int argc, char** argv) {
 		centroids[i] = temp;
 	}
 	
-	for(int z = 0;z<1000;z++){
+	do{
+		OLDcentroids = centroids;
 		assignCentroids(pixels, centroids);
 		moveCentroids(pixels, centroids);
 		//cout<<z<<endl;
-	}
+	}while(!convergence(OLDcentroids,centroids));
+
 	assignFinalPixelColors(pixels, centroids);
 	double result = timer.stop();
 
