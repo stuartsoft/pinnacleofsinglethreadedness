@@ -48,17 +48,7 @@ int main(int argc, char** argv) {
 	vector<pixel> pixels;
 	fipImage input;
 
-	//generate centroids randomly
-	mt19937 generator(chrono::system_clock::now().time_since_epoch().count());
-	uniform_real_distribution<float> distro(0.0f, 1.0f);
-	for(int i = 0; i < CENTROID_COUNT; ++i) {
-		centroid temp;
-		temp.r = distro(generator);
-		temp.g = distro(generator);
-		temp.b = distro(generator);
-
-		centroids[i] = temp;
-	}
+	StopWatch timer;
 
 	//open and load image as per convention from freeimage
 	if(!input.load(file_in)) {
@@ -90,13 +80,28 @@ int main(int argc, char** argv) {
 			pixels[j * input.getWidth() + i] = temp;
 		}
 	}
-	
+
+	timer.start();//start the timer
+
+	//generate centroids randomly
+	mt19937 generator(chrono::system_clock::now().time_since_epoch().count());
+	uniform_real_distribution<float> distro(0.0f, 1.0f);
+	for(int i = 0; i < CENTROID_COUNT; ++i) {
+		centroid temp;
+		temp.r = distro(generator);
+		temp.g = distro(generator);
+		temp.b = distro(generator);
+
+		centroids[i] = temp;
+	}
+
 	for(int z = 0;z<1000;z++){
 		assignCentroids(pixels, centroids);
 		moveCentroids(pixels, centroids);
 		//cout<<z<<endl;
 	}
 	assignFinalPixelColors(pixels, centroids);
+	double result = timer.stop();
 
 	//write image
 	//allocate output image
@@ -122,6 +127,9 @@ int main(int argc, char** argv) {
 		cout << "Something went wrong with filesaving" << endl;
 		return 1;
 	}
+
+	cout<<"Elapsed Time: "<<result/1000.0f<<" sec."<<endl;
+	system("pause");
 
 	#ifdef FREEIMAGE_LIB
 	FreeImage_Uninitialise();
