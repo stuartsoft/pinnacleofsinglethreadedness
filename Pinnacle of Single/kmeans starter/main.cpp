@@ -8,6 +8,10 @@
 #include "StopWatch.h"
 #include "FreeImagePlus.h"
 
+#include <emmintrin.h>
+#include <xmmintrin.h>
+#include <mmintrin.h>
+
 using namespace std;
 
 //structs...centroid and pixel
@@ -15,6 +19,7 @@ struct centroid {
 	float r;
 	float g;
 	float b;
+	float z;
 };
 
 struct pixel {
@@ -28,10 +33,76 @@ struct pixel {
 const int CENTROID_COUNT = 3;
 
 //function prototypes
-void ac(vector<pixel>&, const vector<centroid>&);	//this step should not alter the centroids
-void mc(const vector<pixel>&, vector<centroid>&);	//this step should not alter the pixels
-void fpc(vector<pixel>& pixels, const vector<centroid>& centroids);
+//void ac(vector<pixel>&, const vector<centroid>&);	//this step should not alter the centroids
+//void mc(const vector<pixel>&, vector<centroid>&);	//this step should not alter the pixels
+//void fpc(vector<pixel>& pixels, const vector<centroid>& centroids);
 float getdist(int x1, int y1, int z1, int x2, int y2, int z2);
+
+static __m128 SSEsub(pixel *a,  centroid *b){
+	__m128 mA = _mm_load_ps(reinterpret_cast<float*>(a));
+	__m128 mB = _mm_load_ps(reinterpret_cast<float*>(b));
+
+	return _mm_sub_ps(mB, mA);
+}
+
+//any other functions...assigning centroids and moving centroids
+void ac(vector<pixel>& pixels,  vector<centroid>& centroids) {
+	for (int i = 0;i<pixels.size();i++){
+		int minIndex;
+		float minVal = 255*4;
+		for (int j = 0;j<centroids.size();j++){
+
+			float *res = reinterpret_cast<float*>(&SSEsub(&pixels[i], &centroids[j]));
+
+			float diff = sqrt((res[0]) * (res[0]) 
+			+ (res[1]) *(res[1])
+			+ (res[2]) *(res[2]));
+				
+			if (diff < minVal){
+				minIndex = j;
+				minVal = diff;
+			}
+			
+		}
+
+		//closest match is centroids[minIndex]
+		pixels[i].cluster = minIndex;
+	}
+}
+
+inline void mc(const vector<pixel>& pixels, vector<centroid>& centroids) {
+	for(int j = 0;j<centroids.size();j++){
+		//first, find the avg of the pixels assigned to this centroid
+		float rAvg = 0;
+		float gAvg = 0;
+		float bAvg = 0;
+		int clusterSize = 0;
+		for (int i = 0;i<pixels.size();i++){
+			if (pixels[i].cluster == j){
+				rAvg += pixels[i].r;
+				gAvg += pixels[i].g;
+				bAvg += pixels[i].b;
+				clusterSize++;
+			}
+		}
+
+		rAvg = rAvg/clusterSize;
+		gAvg = gAvg/clusterSize;
+		bAvg = bAvg/clusterSize;
+
+		centroids[j].r = rAvg;
+		centroids[j].g = gAvg;
+		centroids[j].b = bAvg;
+	}
+}
+
+inline void fpc(vector<pixel>& pixels, const vector<centroid>& centroids){
+	for (int i = 0;i<pixels.size();i++){
+		pixels[i].r = centroids[pixels[i].cluster].r;
+		pixels[i].g = centroids[pixels[i].cluster].g;
+		pixels[i].b = centroids[pixels[i].cluster].b;
+	}
+}
 
 
 //main function
@@ -120,9 +191,9 @@ int main(int argc, char** argv) {
 	for(unsigned int i = 0; i < output.getWidth(); ++i) {
 		for(unsigned int j = 0; j < output.getHeight(); ++j) {
 			byte colors[4];
-			colors[0] = static_cast<byte>(pixels[j * output.getWidth() + i].b * 255);
+			colors[0] = static_cast<byte>(pixels[j * output.getWidth() + i].r * 255);
 			colors[1] = static_cast<byte>(pixels[j * output.getWidth() + i].g * 255);
-			colors[2] = static_cast<byte>(pixels[j * output.getWidth() + i].r * 255);
+			colors[2] = static_cast<byte>(pixels[j * output.getWidth() + i].b * 255);
 
 			output.setPixelColor(i, j, reinterpret_cast<RGBQUAD*>(colors));
 		}
@@ -148,58 +219,4 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-//any other functions...assigning centroids and moving centroids
-inline void ac(vector<pixel>& pixels, const vector<centroid>& centroids) {
-	for (int i = 0;i<pixels.size();i++){
-		int minIndex;
-		float minVal = 255*3;
-		for (int j = 0;j<centroids.size();j++){
-			float diff = sqrt((centroids[j].r - pixels[i].r) * (centroids[j].r - pixels[i].r) 
-			+ (centroids[j].g - pixels[i].g) *(centroids[j].g - pixels[i].g)
-			+ (centroids[j].b - pixels[i].b) *(centroids[j].b - pixels[i].b));
-				
-			if (diff < minVal){
-				minIndex = j;
-				minVal = diff;
-			}
-			
-		}
 
-		//closest match is centroids[minIndex]
-		pixels[i].cluster = minIndex;
-	}
-}
-
-inline void mc(const vector<pixel>& pixels, vector<centroid>& centroids) {
-	for(int j = 0;j<centroids.size();j++){
-		//first, find the avg of the pixels assigned to this centroid
-		float rAvg = 0;
-		float gAvg = 0;
-		float bAvg = 0;
-		int clusterSize = 0;
-		for (int i = 0;i<pixels.size();i++){
-			if (pixels[i].cluster == j){
-				rAvg += pixels[i].r;
-				gAvg += pixels[i].g;
-				bAvg += pixels[i].b;
-				clusterSize++;
-			}
-		}
-
-		rAvg = rAvg/clusterSize;
-		gAvg = gAvg/clusterSize;
-		bAvg = bAvg/clusterSize;
-
-		centroids[j].r = rAvg;
-		centroids[j].g = gAvg;
-		centroids[j].b = bAvg;
-	}
-}
-
-inline void fpc(vector<pixel>& pixels, const vector<centroid>& centroids){
-	for (int i = 0;i<pixels.size();i++){
-		pixels[i].r = centroids[pixels[i].cluster].r;
-		pixels[i].g = centroids[pixels[i].cluster].g;
-		pixels[i].b = centroids[pixels[i].cluster].b;
-	}
-}
