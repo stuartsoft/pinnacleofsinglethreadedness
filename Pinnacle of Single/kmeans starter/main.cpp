@@ -38,31 +38,32 @@ const int CENTROID_COUNT = 5;
 //void fpc(vector<pixel>& pixels, const vector<centroid>& centroids);
 float getdist(int x1, int y1, int z1, int x2, int y2, int z2);
 
-static __m128 SSEsub(pixel *a,  centroid *b){
+inline static __m128 sseCentroidPixelDist(pixel *a,  centroid *b){
 	__m128 mA = _mm_load_ps(reinterpret_cast<float*>(a));
 	__m128 mB = _mm_load_ps(reinterpret_cast<float*>(b));
 
-	return _mm_sub_ps(mB, mA);
+	__m128 res = _mm_sub_ps(mB, mA);//centroid.x,y,z - pixel.x,y,z
+	__m128 res2 = _mm_mul_ps(res,res);//square results
+	return res2;
+
 }
 
 //any other functions...assigning centroids and moving centroids
-void ac(vector<pixel>& pixels,  vector<centroid>& centroids) {
+inline void ac(vector<pixel>& pixels,  vector<centroid>& centroids) {
 	for (int i = 0;i<pixels.size();i++){
 		int minIndex;
-		float minVal = 255*4;
+		float minVal = 255<<2;
 		for (int j = 0;j<centroids.size();j++){
+			//calc centroid pixel distance
+			float *res = reinterpret_cast<float*>(&sseCentroidPixelDist(&pixels[i], &centroids[j]));
 
-			float *res = reinterpret_cast<float*>(&SSEsub(&pixels[i], &centroids[j]));
-
-			float diff = sqrt((res[0]) * (res[0]) 
-			+ (res[1]) *(res[1])
-			+ (res[2]) *(res[2]));
+			//run sqrt to get final distance
+			float diff = sqrt(res[0] + res[1] + res[2]);
 				
 			if (diff < minVal){
 				minIndex = j;
 				minVal = diff;
 			}
-			
 		}
 
 		//closest match is centroids[minIndex]
@@ -97,10 +98,12 @@ inline void mc(const vector<pixel>& pixels, vector<centroid>& centroids) {
 }
 
 inline void fpc(vector<pixel>& pixels, const vector<centroid>& centroids){
+	int index = 0;
 	for (int i = 0;i<pixels.size();i++){
-		pixels[i].r = centroids[pixels[i].cluster].r;
-		pixels[i].g = centroids[pixels[i].cluster].g;
-		pixels[i].b = centroids[pixels[i].cluster].b;
+		index = pixels[i].cluster;
+		pixels[i].r = centroids[index].r;
+		pixels[i].g = centroids[index].g;
+		pixels[i].b = centroids[index].b;
 	}
 }
 
@@ -113,7 +116,7 @@ int main(int argc, char** argv) {
 	#endif
 
 	//hardcode the image names, create vectors and FreeImage library object
-	char* file_in = "test.jpg";
+	char* file_in = "test1.jpg";
 	char* file_out = "test_result.jpg";
 	vector<centroid> centroids(CENTROID_COUNT);
 	vector<pixel> pixels;
@@ -162,7 +165,6 @@ int main(int argc, char** argv) {
 		temp.r = distro(generator);
 		temp.g = distro(generator);
 		temp.b = distro(generator);
-
 		centroids[i] = temp;
 	}
 
@@ -179,6 +181,7 @@ int main(int argc, char** argv) {
 
 		ac(pixels, centroids);
 		mc(pixels, centroids);
+
 		//cout<<z<<endl;
 	}
 	fpc(pixels, centroids);
@@ -191,9 +194,10 @@ int main(int argc, char** argv) {
 	for(unsigned int i = 0; i < output.getWidth(); ++i) {
 		for(unsigned int j = 0; j < output.getHeight(); ++j) {
 			byte colors[4];
-			colors[0] = static_cast<byte>(pixels[j * output.getWidth() + i].r * 255);
-			colors[1] = static_cast<byte>(pixels[j * output.getWidth() + i].g * 255);
-			colors[2] = static_cast<byte>(pixels[j * output.getWidth() + i].b * 255);
+			int index = j * output.getWidth() + i;
+			colors[0] = static_cast<byte>(pixels[index].r * 255);
+			colors[1] = static_cast<byte>(pixels[index].g * 255);
+			colors[2] = static_cast<byte>(pixels[index].b * 255);
 
 			output.setPixelColor(i, j, reinterpret_cast<RGBQUAD*>(colors));
 		}
